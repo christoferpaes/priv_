@@ -20,6 +20,8 @@ open an admin powershell(PS)
 
 </br>
 ![Alt text for Start Command](priv_/images/startCommand.png)
+<br>
+</br>
 # priv_
 The Service Control Manager (SCM) is a remote procedure call (RPC) server. It is started at system boot and allows service configuration and service control programs to manipulate services on remote machines.
 
