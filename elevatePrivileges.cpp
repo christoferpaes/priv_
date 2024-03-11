@@ -1,54 +1,96 @@
 #include <Windows.h>
 #include <Shellapi.h>
+#include <string>
 
-bool elevatePrivileges() {
-    HANDLE hToken = NULL;
-    if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken)) {
-        TOKEN_ELEVATION elevation;
-        DWORD dwSize;
-        if (GetTokenInformation(hToken, TokenElevation, &elevation, sizeof(elevation), &dwSize)) {
-            if (elevation.TokenIsElevated == 0) {
-                SHELLEXECUTEINFOA sei = { sizeof(sei) };  // Use ANSI version
-                sei.lpVerb = "runas";  // Use ANSI string
-                sei.lpFile = "serviceControl.exe";  // Replace with your program's executable
-                sei.nShow = SW_SHOWNORMAL;
+void DisplayErrorMessage(const wchar_t* action, DWORD error) {
+    LPVOID errorMsg;
+    FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                   NULL,
+                   error,
+                   0, // Default language
+                   (LPWSTR)&errorMsg,
+                   0,
+                   NULL);
 
-                if (ShellExecuteExA(&sei)) {
-                    Sleep(1000);
-                    HWND hwndUAC = FindWindowA(nullptr, "User Account Control");  // Use ANSI version
-                    if (hwndUAC != nullptr) {
-                        HWND hwndYesButton = FindWindowExA(hwndUAC, nullptr, "Button", "&Yes");  // Use ANSI version
-                        if (hwndYesButton != nullptr) {
-                            SendMessageA(hwndYesButton, BM_CLICK, 0, 0);  // Use ANSI version
-                        }
-                    }
+    MessageBoxW(NULL, (LPCWSTR)errorMsg, action, MB_ICONERROR);
 
-                    // Close the console window
-                    FreeConsole();
+    LocalFree(errorMsg);
+}
 
-                    // Terminate the program
-                    ExitProcess(0);
-                } else {
-                    // Handle the error
-                    DWORD error = GetLastError();
-                    MessageBoxA(nullptr, "Failed to execute elevated process.", "Error", MB_ICONERROR);
-                    // ...
-                }
+bool StopService(const wchar_t* serviceName) {
+    SC_HANDLE serviceManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+    if (serviceManager) {
+        SC_HANDLE service = OpenServiceW(serviceManager, serviceName, SERVICE_STOP | SERVICE_QUERY_STATUS);
+        if (service) {
+            SERVICE_STATUS serviceStatus;
+            if (ControlService(service, SERVICE_CONTROL_STOP, &serviceStatus)) {
+                MessageBoxW(NULL, L"The service has been stopped successfully!", L"Success", MB_ICONINFORMATION);
             } else {
-                CloseHandle(hToken);
-                return TRUE;
+                DWORD error = GetLastError();
+                DisplayErrorMessage(L"Failed to stop the service", error);
+            }
+
+            CloseServiceHandle(service);
+        } else {
+            MessageBoxW(NULL, L"Failed to open the service.", L"Error", MB_ICONERROR);
+        }
+        CloseServiceHandle(serviceManager);
+    } else {
+        MessageBoxW(NULL, L"Failed to open the service manager.", L"Error", MB_ICONERROR);
+    }
+
+    return false;
+}
+
+bool IsRunningAsAdmin() {
+    BOOL result;
+    PSID adminSid;
+    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+
+    if (AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &adminSid)) {
+        if (CheckTokenMembership(NULL, adminSid, &result) == FALSE) {
+            result = FALSE;
+        }
+
+        FreeSid(adminSid);
+    }
+
+    return result;
+}
+
+void RelaunchAsAdmin() {
+    SHELLEXECUTEINFOW sei = { sizeof(sei) };
+    sei.lpVerb = L"runas";
+    sei.lpFile = L"serviceControl.exe";  // Replace with your program's executable
+    sei.nShow = SW_SHOWNORMAL;
+
+    if (ShellExecuteExW(&sei)) {
+        // Sleep to allow UAC prompt to appear
+        Sleep(1000);
+        HWND hwndUAC = FindWindowW(NULL, L"User Account Control");
+        if (hwndUAC != nullptr) {
+            HWND hwndYesButton = FindWindowExW(hwndUAC, nullptr, L"Button", L"&Yes");
+            if (hwndYesButton != nullptr) {
+                SendMessageW(hwndYesButton, BM_CLICK, 0, 0);
             }
         }
-        CloseHandle(hToken);
+
+        // Close the console window
+        FreeConsole();
+
+        // Terminate the program
+        ExitProcess(0);
+    } else {
+        DWORD error = GetLastError();
+        DisplayErrorMessage(L"Failed to execute elevated process", error);
     }
-    return TRUE;
 }
 
 int main() {
-    if (elevatePrivileges()) {
-        MessageBoxA(nullptr, "The program is running with elevated privileges.", "Success", MB_ICONINFORMATION);
+    if (!IsRunningAsAdmin()) {
+        RelaunchAsAdmin();
     } else {
-        MessageBoxA(nullptr, "Failed to elevate privileges.", "Error", MB_ICONERROR);
+        MessageBoxW(NULL, L"The program is running with elevated privileges.", L"Success", MB_ICONINFORMATION);
     }
 
     return 0;

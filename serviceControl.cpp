@@ -24,14 +24,23 @@ bool StopService(const wchar_t* serviceName) {
         SC_HANDLE service = OpenServiceW(serviceManager, serviceName, SERVICE_STOP | SERVICE_QUERY_STATUS);
         if (service) {
             SERVICE_STATUS serviceStatus;
-            if (ControlService(service, SERVICE_CONTROL_STOP, &serviceStatus)) {
-                MessageBoxW(NULL, L"The service has been stopped successfully!", L"Success", MB_ICONINFORMATION);
-                CloseServiceHandle(service);
-                CloseServiceHandle(serviceManager);
-                return true;
+            if (QueryServiceStatus(service, &serviceStatus)) {
+                if (serviceStatus.dwCurrentState == SERVICE_RUNNING) {
+                    if (ControlService(service, SERVICE_CONTROL_STOP, &serviceStatus)) {
+                        MessageBoxW(NULL, L"The service has been stopped successfully!", L"Success", MB_ICONINFORMATION);
+                        CloseServiceHandle(service);
+                        CloseServiceHandle(serviceManager);
+                        return true;
+                    } else {
+                        DWORD error = GetLastError();
+                        DisplayErrorMessage(L"Failed to stop the service", error);
+                    }
+                } else {
+                    MessageBoxW(NULL, L"The service is not currently running.", L"Information", MB_ICONINFORMATION);
+                }
             } else {
                 DWORD error = GetLastError();
-                DisplayErrorMessage(L"Failed to stop the service", error);
+                DisplayErrorMessage(L"Failed to query service status", error);
             }
             CloseServiceHandle(service);
         } else {
