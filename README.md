@@ -14,11 +14,24 @@ TOKEN_ADJUST_PRIVILEGES: This allows modifying the privileges associated with th
 TOKEN_QUERY: This allows querying information from the token, such as the process's privileges.
 &hToken: This is a pointer to a variable of type HANDLE. The function will store the handle to the opened token at this memory location if successful.
 
+<title2>if (serviceManager): This condition checks if the serviceManager variable holds a valid handle. This handle is likely obtained from a previous call to a function like OpenSCManager.
+Opening Service Handle:</title2>
+
 Functionality:
 If the function call is successful, it opens a handle to the current process's access token and stores the handle in the hToken variable (pointed to by the address).
 You can then use this handle with other functions to query information about the process's privileges or potentially adjust them (if the process has sufficient permissions).
 
 
+SC_HANDLE service = OpenService(serviceManager, "wuauserv", SERVICE_START | SERVICE_STOP);:
+OpenService: This function attempts to open a handle to a service identified by a specific name.
+serviceManager: This argument is the handle to the service control manager (SCM) obtained earlier. The SCM manages all services on the system.
+"wuauserv": This is the name of the service you're trying to open a handle to. In this case, it's "wuauserv," which is the Windows Update service.
+SERVICE_START | SERVICE_STOP: This specifies the desired access rights for the opened service handle. Here, it combines two access rights using the bitwise OR operator (|):
+SERVICE_START: This allows starting the service if it's currently stopped.
+SERVICE_STOP: This allows stopping the service if it's currently running.
+Functionality:
+
+If the serviceManager handle is valid and the OpenService function succeeds, a handle to the specified service ("wuauserv" in this case) will be stored in the service variable.
 ****Additional notes****
 <br>What is a handle?</br>
 
