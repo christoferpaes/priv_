@@ -32,7 +32,7 @@ SERVICE_STOP: This allows stopping the service if it's currently running.
 Functionality:
 
 If the serviceManager handle is valid and the OpenService function succeeds, a handle to the specified service ("wuauserv" in this case) will be stored in the service variable.
-****Additional notes****
+<br>****Additional notes**** </br>
 <br>What is a handle?</br>
 
 
