@@ -18,7 +18,7 @@ To verify if it is running in PS run the command
 <b>Get-Service trustedInstaller</b>
 
 ![Alt text for Start Command](images/getServiceInstaller.png)
-
+<br> </br>
 <br>
 </br>
 # priv_
