@@ -6,6 +6,19 @@ donwload both executables but just run elevevatePrivileges.exe
 ![Alt text](images/trustedInstallerOff.png)
 
 
+
+
+<Title3>
+IF WUAUSERV IS NOT RUNNING 
+  
+</Title3>
+<br>
+open an admin powershell(PS) 
+</br>
+<br>
+![Alt text](images/startCommand.png)
+
+</br>
 # priv_
 The Service Control Manager (SCM) is a remote procedure call (RPC) server. It is started at system boot and allows service configuration and service control programs to manipulate services on remote machines.
 
