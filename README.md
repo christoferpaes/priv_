@@ -9,12 +9,11 @@ donwload both executables but just run elevevatePrivileges.exe
 
 
 IF WUAUSERV IS NOT RUNNING 
-  
+  open an admin powershell(PS) 
 ![Alt text for Start Command](images/startCommand.png)
-<br>
-open an admin powershell(PS) 
-</br>
-<br>
+
+
+
 
 
 </br>
