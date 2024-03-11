@@ -32,7 +32,7 @@ SOCKET hSocket = socket(AF_INET, SOCK_STREAM, 0);
 <b>Registry Key Handle</b>
 HKEY hKey;
 RegOpenKeyEx(HKEY_LOCAL_MACHINE, L"SOFTWARE\\MyApp", 0, KEY_READ, &hKey);
-<br<b>File Mapping Handle</b></br>
+<br><b>File Mapping Handle</b></br>
 HANDLE hFileMapping = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 4096, L"MyFileMapping");
 
 <b>Semaphore Handle</b>
