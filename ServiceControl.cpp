@@ -5,11 +5,11 @@ int main() {
     if (serviceManager) {
         SC_HANDLE service = OpenService(serviceManager, "wuauserv", SERVICE_START | SERVICE_STOP);
         if (service) {
-            // Time to turn it off
+            // Time to turn it off/ this turns off the trustedInstaller 
             ControlService(service, SERVICE_CONTROL_STOP, new SERVICE_STATUS);
 
             // Do your rebellious explanation, then turn it back on
-            ControlService(service, SERVICE_CONTROL_START, new SERVICE_STATUS);
+           // ControlService(service, SERVICE_CONTROL_START, new SERVICE_STATUS);
 
             CloseServiceHandle(service);
         }
