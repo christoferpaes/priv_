@@ -14,7 +14,8 @@ IF WUAUSERV IS NOT RUNNING
 
 
 
-
+To verify if it is running in PS run the command 
+<b>Get-Service trustedInstaller</b>
 
 </br>
 
