@@ -2,7 +2,8 @@ If you want to test the program
 
 
 donwload both executables but just run elevevatePrivileges.exe
-![Alt text](priv_/images/trustedInstallerOff.png)
+<br></br>
+![Alt text](images/trustedInstallerOff.png)
 
 
 # priv_
