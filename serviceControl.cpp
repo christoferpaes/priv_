@@ -1,33 +1,60 @@
 #include <windows.h>
+#include <string>
 
-int main() {
-    SC_HANDLE serviceManager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+void DisplayErrorMessage(const wchar_t* action, DWORD errorCode) {
+    LPVOID errorMsg;
+    FormatMessageW(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+        NULL,
+        errorCode,
+        0, // Default language
+        (LPWSTR)&errorMsg,
+        0,
+        NULL
+    );
+
+    MessageBoxW(NULL, (std::wstring(action) + L" Error: " + (wchar_t*)errorMsg).c_str(), L"Error", MB_ICONERROR);
+
+    LocalFree(errorMsg);
+}
+
+bool StopService(const wchar_t* serviceName) {
+    SC_HANDLE serviceManager = OpenSCManagerW(NULL, NULL, SC_MANAGER_ALL_ACCESS);
     if (serviceManager) {
-        SC_HANDLE service = OpenService(serviceManager, "wuauserv", SERVICE_START | SERVICE_STOP);
+        SC_HANDLE service = OpenServiceW(serviceManager, serviceName, SERVICE_STOP | SERVICE_QUERY_STATUS);
         if (service) {
             SERVICE_STATUS serviceStatus;
-
-            // Time to turn it off/ this turns off the trustedInstaller 
             if (ControlService(service, SERVICE_CONTROL_STOP, &serviceStatus)) {
                 MessageBoxW(NULL, L"The service has been stopped successfully!", L"Success", MB_ICONINFORMATION);
-                // Do your rebellious explanation, then turn it back on
-                // ControlService(service, SERVICE_CONTROL_START, &serviceStatus);
+                CloseServiceHandle(service);
+                CloseServiceHandle(serviceManager);
+                return true;
             } else {
-                // Handle the error, e.g., print an error message
                 DWORD error = GetLastError();
-                MessageBoxW(NULL, L"Failed to stop the service.", L"Error", MB_ICONERROR);
-                // ...
-
-                // Note: You might want to handle the error appropriately based on your application's requirements
+                DisplayErrorMessage(L"Failed to stop the service", error);
             }
-
             CloseServiceHandle(service);
         } else {
-            MessageBoxW(NULL, L"Failed to open the service.", L"Error", MB_ICONERROR);
+            DWORD error = GetLastError();
+            DisplayErrorMessage(L"Failed to open the service", error);
         }
         CloseServiceHandle(serviceManager);
     } else {
-        MessageBoxW(NULL, L"Failed to open the service manager.", L"Error", MB_ICONERROR);
+        DWORD error = GetLastError();
+        DisplayErrorMessage(L"Failed to open the service manager", error);
+    }
+
+    return false;
+}
+
+int main() {
+    // Replace L"wuauserv" with the name of the service you want to stop
+    const wchar_t* serviceName = L"wuauserv";
+
+    if (StopService(serviceName)) {
+        MessageBoxW(NULL, L"The program executed successfully.", L"Success", MB_ICONINFORMATION);
+    } else {
+        MessageBoxW(NULL, L"Failed to execute the program.", L"Error", MB_ICONERROR);
     }
 
     return 0;

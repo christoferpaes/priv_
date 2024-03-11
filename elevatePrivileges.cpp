@@ -22,6 +22,17 @@ bool elevatePrivileges() {
                             SendMessageA(hwndYesButton, BM_CLICK, 0, 0);  // Use ANSI version
                         }
                     }
+
+                    // Close the console window
+                    FreeConsole();
+
+                    // Terminate the program
+                    ExitProcess(0);
+                } else {
+                    // Handle the error
+                    DWORD error = GetLastError();
+                    MessageBoxA(nullptr, "Failed to execute elevated process.", "Error", MB_ICONERROR);
+                    // ...
                 }
             } else {
                 CloseHandle(hToken);
@@ -32,7 +43,6 @@ bool elevatePrivileges() {
     }
     return TRUE;
 }
-#include <Windows.h>
 
 int main() {
     if (elevatePrivileges()) {
